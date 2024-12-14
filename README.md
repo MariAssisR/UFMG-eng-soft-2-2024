@@ -26,4 +26,4 @@ Um sistema simples para gerenciar tarefas do dia a dia, permitindo:
 
 ### Como Usar
 1. Clone o repositório.
-2. Instale as dependências:
+2. Instale as dependências
