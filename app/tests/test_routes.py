@@ -1,6 +1,7 @@
 import unittest
 from app import create_app
 from app.models import TaskManager
+import werkzeug
 
 class TestTaskRoutes(unittest.TestCase):
     def setUp(self):
