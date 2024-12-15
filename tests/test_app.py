@@ -37,7 +37,7 @@ def test_list_tasks_empty(client):
 
 # Teste 2: Adicionar uma nova tarefa
 def test_add_task(client):
-    task_data = {"description": "Estudar Python", "category": "Estudo", "deadline": "2024-12-31"}
+    task_data = {"description": "Estudar Python", "category": "Pessoal", "deadline": "2024-12-31"}
     response = client.post("/tasks/", json=task_data)
     assert response.status_code == 201
     task = response.get_json()
@@ -59,30 +59,30 @@ def test_edit_task(client):
     assert response.status_code == 200
     assert response.get_json()["description"] == "Tarefa Editada"
 
-# Teste 5: Editar tarefa inexistente
-def test_edit_nonexistent_task(client):
-    response = client.put("/tasks/999", json={"description": "Inexistente"})
-    assert response.status_code == 404
-
-# Teste 6: Deletar uma tarefa existente
-def test_delete_task(client):
-    client.post("/tasks/", json={"description": "Tarefa 1"})
-    response = client.delete("/tasks/1")
-    assert response.status_code == 200
-    assert response.get_json()["message"] == "Task 1 deleted"
-
-# Teste 7: Deletar tarefa inexistente
-def test_delete_nonexistent_task(client):
-    response = client.delete("/tasks/999")
-    assert response.status_code == 200  # O sistema trata como sucesso
-
-# Teste 8: Marcar uma tarefa como concluída
+# Teste 5: Marcar uma tarefa como concluída
 def test_mark_task_completed(client):
     client.post("/tasks/", json={"description": "Tarefa 1"})
     response = client.patch("/tasks/1/complete")
     assert response.status_code == 200
     task = response.get_json()
     assert task["completed"] is True
+
+# Teste 6: Editar tarefa inexistente
+def test_edit_nonexistent_task(client):
+    response = client.put("/tasks/999", json={"description": "Inexistente"})
+    assert response.status_code == 404
+
+# Teste 7: Deletar uma tarefa existente
+def test_delete_task(client):
+    client.post("/tasks/", json={"description": "Tarefa 1"})
+    response = client.delete("/tasks/1")
+    assert response.status_code == 200
+    assert response.get_json()["message"] == "Task 1 deleted"
+
+# Teste 8: Deletar tarefa inexistente
+def test_delete_nonexistent_task(client):
+    response = client.delete("/tasks/999")
+    assert response.status_code == 200  # O sistema trata como sucesso
 
 # Teste 9: Marcar tarefa inexistente como concluída
 def test_mark_nonexistent_task_completed(client):
