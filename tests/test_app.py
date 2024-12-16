@@ -147,7 +147,11 @@ def test_add_task_with_category(client):
 
 # Teste 14: Persistência de dados entre requisições
 def test_task_persistence(client):
-    task_data = {"description": "Persistência", "deadline": "2024-12-31"}
+    task_data = {
+        "description": "Estudar Python",
+        "category": "Pessoal",
+        "deadline": "2024-12-31",
+    }
     client.post("/tasks/", json=task_data)
     response = client.get("/tasks/")
     assert len(response.get_json()) == 1
