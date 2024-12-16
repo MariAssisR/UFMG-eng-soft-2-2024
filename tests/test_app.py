@@ -9,10 +9,10 @@ import json
 @pytest.fixture
 def reset_tasks():
     # Remove o arquivo JSON antes de cada teste
-    if os.path.exists("../tasks.json"):
-        os.remove("../tasks.json")
+    if os.path.exists("tasks.json"):
+        os.remove("tasks.json")
     # Recria o arquivo vazio
-    with open("../tasks.json", "w") as file:
+    with open("tasks.json", "w") as file:
         json.dump([], file)
 
 
@@ -108,6 +108,7 @@ def test_mark_nonexistent_task_completed(client):
 
 # Teste 10: Listar tarefas pendentes
 def test_list_pending_tasks(client):
+    client.delete("/tasks/clear")
     task_1_data = {
         "description": "Tarefa 1",
         "category": "Pessoal",
@@ -129,6 +130,7 @@ def test_list_pending_tasks(client):
 
 # Teste 11: Listar tarefas concluídas
 def test_list_completed_tasks(client):
+    client.delete("/tasks/clear")
     response_before = client.get("/tasks/?completed=true")
     tasks_before = response_before.get_json()
     num_completed_before = len(tasks_before)
@@ -158,6 +160,7 @@ def test_add_task_without_description(client):
 
 # Teste 13: Adicionar tarefa com categoria personalizada
 def test_add_task_with_category(client):
+    client.delete("/tasks/clear")
     task_data = {
         "description": "Ler um livro",
         "category": "Lazer",
@@ -169,6 +172,7 @@ def test_add_task_with_category(client):
 
 # Teste 14: Persistência de dados entre requisições
 def test_task_persistence(client):
+    client.delete("/tasks/clear")
     task_data = {
         "description": "Estudar Python",
         "category": "Pessoal",
@@ -181,6 +185,7 @@ def test_task_persistence(client):
 
 # Teste 15: Validação de id único para tarefas
 def test_unique_task_ids(client):
+    client.delete("/tasks/clear")
     task_1_data = {
         "description": "Tarefa 1",
         "category": "Pessoal",
