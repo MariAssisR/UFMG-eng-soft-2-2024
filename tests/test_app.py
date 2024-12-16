@@ -119,12 +119,24 @@ def test_list_pending_tasks(client):
 
 # Teste 11: Listar tarefas concluídas
 def test_list_completed_tasks(client):
-    client.post("/tasks/", json={"description": "Tarefa 1"})
+    response_before = client.get("/tasks/?completed=true")
+    tasks_before = response_before.get_json()
+    num_completed_before = len(tasks_before)
+
+    task_data = {
+        "description": "Tarefa 1",
+        "category": "Pessoal",
+        "deadline": "2024-12-31",
+    }
+    client.post("/tasks/", json=task_data)
     client.patch("/tasks/1/complete")
-    response = client.get("/tasks/?completed=true")
-    tasks = response.get_json()
-    assert len(tasks) == 1
-    assert tasks[0]["description"] == "Tarefa 1"
+
+    response_after = client.get("/tasks/?completed=true")
+    tasks_after = response_after.get_json()
+    num_completed_after = len(tasks_after)
+
+    assert num_completed_after == num_completed_before + 1
+    assert any(task["description"] == "Tarefa 1" for task in tasks_after)
 
 
 # Teste 12: Adicionar tarefa sem descrição
