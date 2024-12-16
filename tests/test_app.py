@@ -108,13 +108,23 @@ def test_mark_nonexistent_task_completed(client):
 
 # Teste 10: Listar tarefas pendentes
 def test_list_pending_tasks(client):
-    client.post("/tasks/", json={"description": "Tarefa 1"})
-    client.post("/tasks/", json={"description": "Tarefa 2"})
+    task_1_data = {
+        "description": "Estudar HTML",
+        "category": "Pessoal",
+        "deadline": "2024-12-30",
+    }
+    task_2_data = {
+        "description": "Estudar Java",
+        "category": "Pessoal",
+        "deadline": "2024-12-31",
+    }
+    client.post("/tasks/", json=task_1_data)
+    client.post("/tasks/", json=task_2_data)
     client.patch("/tasks/1/complete")  # Concluir a primeira tarefa
     response = client.get("/tasks/?completed=false")
     tasks = response.get_json()
     assert len(tasks) == 1
-    assert tasks[0]["description"] == "Tarefa 2"
+    assert tasks[0]["description"] == "Estudar Java"
 
 
 # Teste 11: Listar tarefas concluídas
