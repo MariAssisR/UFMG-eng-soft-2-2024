@@ -9,10 +9,10 @@ import json
 @pytest.fixture
 def reset_tasks():
     # Remove o arquivo JSON antes de cada teste
-    if os.path.exists("tasks.json"):
-        os.remove("tasks.json")
+    if os.path.exists("../tasks.json"):
+        os.remove("../tasks.json")
     # Recria o arquivo vazio
-    with open("tasks.json", "w") as file:
+    with open("../tasks.json", "w") as file:
         json.dump([], file)
 
 
