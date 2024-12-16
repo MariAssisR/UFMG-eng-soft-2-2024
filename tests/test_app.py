@@ -109,12 +109,12 @@ def test_mark_nonexistent_task_completed(client):
 # Teste 10: Listar tarefas pendentes
 def test_list_pending_tasks(client):
     task_1_data = {
-        "description": "Estudar HTML",
+        "description": "Tarefa 1",
         "category": "Pessoal",
         "deadline": "2024-12-30",
     }
     task_2_data = {
-        "description": "Estudar Java",
+        "description": "Tarefa 2",
         "category": "Pessoal",
         "deadline": "2024-12-31",
     }
@@ -124,7 +124,7 @@ def test_list_pending_tasks(client):
     response = client.get("/tasks/?completed=false")
     tasks = response.get_json()
     assert len(tasks) == 1
-    assert tasks[0]["description"] == "Estudar Java"
+    assert tasks[0]["description"] == "Tarefa 2"
 
 
 # Teste 11: Listar tarefas concluídas
@@ -134,7 +134,7 @@ def test_list_completed_tasks(client):
     num_completed_before = len(tasks_before)
 
     task_data = {
-        "description": "Tarefa 1",
+        "description": "Tarefa 3",
         "category": "Pessoal",
         "deadline": "2024-12-31",
     }
@@ -146,7 +146,7 @@ def test_list_completed_tasks(client):
     num_completed_after = len(tasks_after)
 
     assert num_completed_after == num_completed_before + 1
-    assert any(task["description"] == "Tarefa 1" for task in tasks_after)
+    assert any(task["description"] == "Tarefa 3" for task in tasks_after)
 
 
 # Teste 12: Adicionar tarefa sem descrição
@@ -181,7 +181,17 @@ def test_task_persistence(client):
 
 # Teste 15: Validação de id único para tarefas
 def test_unique_task_ids(client):
-    client.post("/tasks/", json={"description": "Tarefa 1"})
-    client.post("/tasks/", json={"description": "Tarefa 2"})
+    task_1_data = {
+        "description": "Tarefa 1",
+        "category": "Pessoal",
+        "deadline": "2024-12-30",
+    }
+    task_2_data = {
+        "description": "Tarefa 2",
+        "category": "Pessoal",
+        "deadline": "2024-12-31",
+    }
+    client.post("/tasks/", json=task_1_data)
+    client.post("/tasks/", json=task_2_data)
     tasks = client.get("/tasks/").get_json()
     assert tasks[0]["id"] != tasks[1]["id"]
