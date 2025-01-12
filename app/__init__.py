@@ -8,10 +8,20 @@ load_dotenv()
 # Inicializando a db
 db = SQLAlchemy()
 
-def create_app():
+def create_app(config_name=None):
     app = Flask(__name__)
+
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default_secret_key')
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tasks.db'
+    if config_name == 'testing':
+        app.config.from_mapping(
+            SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:',
+            TESTING=True,
+            DEBUG=False
+        )
+    else:
+        app.config.from_mapping(
+            SQLALCHEMY_DATABASE_URI = 'sqlite:///tasks.db'
+        )
 
     db.init_app(app)
 
