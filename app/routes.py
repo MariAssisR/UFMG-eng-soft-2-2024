@@ -46,9 +46,9 @@ def edit_task(task_id):
         category=data.get('category'),
         deadline=data.get('deadline')
     )
-    if task:
-        return jsonify(task), 200
-    return jsonify({"error": "Task not found"}), 404
+    if task is None:
+        return jsonify({"error": "Task not found"}), 404
+    return jsonify(task.to_dict()), 200
 
 @task_bp.route('/<int:task_id>', methods=['DELETE'])
 def delete_task(task_id):
@@ -61,7 +61,7 @@ def mark_completed(task_id):
     task_manager = TaskManager(db)
     task = task_manager.mark_completed(task_id)
     if task:
-        return jsonify(task), 200
+        return jsonify(task.to_dict()), 200
     return jsonify({"error": "Task not found"}), 404
 
 @task_bp.route('/clear', methods=['DELETE'])

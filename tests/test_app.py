@@ -1,46 +1,56 @@
 import pytest
-from app import create_app
-from app.models import TaskManager
-import os
-import json
-
+from app import create_app, db
+from app.models import TaskManager, Task
+from datetime import datetime
 
 @pytest.fixture
-def client():
-    app = create_app('testing') 
-    app.config['DEBUG'] = False  
+def app():
+    return create_app('testing')
+
+@pytest.fixture
+def client(app):
     with app.test_client() as client:
         yield client
 
 @pytest.fixture
-def task_manager():
-    return TaskManager() 
+def task_manager(app):
+    with app.app_context():
+        return TaskManager(db) 
 
 # Teste 1: Listar tarefas quando não há nenhuma
-def test_list_tasks_empty(client, task_manager):
+def test_list_tasks_empty(client):
     response = client.get("/tasks/")
     assert response.status_code == 200
     assert response.get_json() == []
 
-
 # Teste 2: Adicionar uma nova tarefa
-def test_add_task(client, task_manager):
+def test_add_task_e2e(client): 
     task_data = {
         "description": "Estudar Python",
         "category": "Pessoal",
         "deadline": "2024-12-31",
     }
-    task_manager.add_task(task_data)
-    response = client.get("/tasks/") 
-    assert response.status_code == 200
-    task = response.get_json()[0] 
-    assert task["description"] == "Estudar Python"
-    assert task["completed"] is False
+    response = client.post("/tasks/", json=task_data)
+    assert response.status_code == 201
+
+    response_get = client.get("/tasks/")
+    assert response_get.status_code == 200
+    tasks = response_get.get_json()
+    assert len(tasks) == 1
+    assert tasks[0]["description"] == "Estudar Python"
+    assert tasks[0]["category"] == "Pessoal"
+    assert tasks[0]["deadline"] == "2024-12-31"
+    assert tasks[0]["completed"] is False
 
 
 # Teste 3: Listar tarefas após adicionar uma
 def test_list_tasks_after_adding(client):
-    client.post("/tasks/", json={"description": "Tarefa 1"})
+    task_data = {
+        "description": "Estudar Python",
+        "category": "Pessoal",
+        "deadline": "2024-12-31",
+    }
+    client.post("/tasks/", json=task_data)
     response = client.get("/tasks/")
     assert response.status_code == 200
     tasks = response.get_json()
@@ -49,15 +59,36 @@ def test_list_tasks_after_adding(client):
 
 # Teste 4: Editar uma tarefa existente
 def test_edit_task(client):
-    client.post("/tasks/", json={"description": "Tarefa 1"})
-    response = client.put("/tasks/1", json={"description": "Tarefa Editada"})
-    assert response.status_code == 200
-    assert response.get_json()["description"] == "Tarefa Editada"
+    task_data = {
+        "description": "Estudar Python",
+        "category": "Pessoal",
+        "deadline": "2024-12-31",
+    }
+    response = client.post("/tasks/", json=task_data)
+    assert response.status_code == 201
+    created_task = response.get_json()
+    task_id = created_task["id"]
+    assert task_id == 1
+
+    edited_task_data = {
+        "description": "Tarefa Editada",
+        "category": "Pessoal",
+        "deadline": "2024-12-31",
+    }
+    put_response = client.put(f"/tasks/{task_id}", json=edited_task_data)
+    assert put_response .status_code == 200
+    edited_task = put_response.get_json()
+    assert edited_task["description"] == "Tarefa Editada"
 
 
 # Teste 5: Marcar uma tarefa como concluída
 def test_mark_task_completed(client):
-    client.post("/tasks/", json={"description": "Tarefa 1"})
+    task_data = {
+        "description": "Estudar Python",
+        "category": "Pessoal",
+        "deadline": "2024-12-31",
+    }
+    client.post("/tasks/", json=task_data)
     response = client.patch("/tasks/1/complete")
     assert response.status_code == 200
     task = response.get_json()
@@ -66,7 +97,12 @@ def test_mark_task_completed(client):
 
 # Teste 6: Editar tarefa inexistente
 def test_edit_nonexistent_task(client):
-    response = client.put("/tasks/999", json={"description": "Inexistente"})
+    task_data = {
+        "description": "Inexistente",
+        "category": "Pessoal",
+        "deadline": "2024-12-31",
+    }
+    response = client.put("/tasks/999", json=task_data)
     assert response.status_code == 404
 
 

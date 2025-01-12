@@ -11,7 +11,7 @@ class Task(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
-        return f"<Task {self.title}>"
+        return f"<Task {self.description}>"
     
     def to_dict(self):
         return {
@@ -38,16 +38,17 @@ class TaskManager:
 
     def edit_task(self, task_id, description=None, category=None, deadline=None):
         task = Task.query.get(task_id)
-        deadline_datetime = datetime.strptime(deadline, "%Y-%m-%d")
         if task:
             if description:
                 task.description = description
             if category and category in self.CATEGORIES:
                 task.category = category
             if deadline:
+                deadline_datetime = datetime.strptime(deadline, "%Y-%m-%d")
                 task.deadline = deadline_datetime
             self.db.session.commit()
-        return task
+            return task
+        return None
 
     def delete_task(self, task_id):
         task = Task.query.get(task_id)
@@ -60,7 +61,7 @@ class TaskManager:
         if task:
             task.completed = True
             self.db.session.commit()
-        return task.to_dict()
+        return task
 
     def get_tasks(self, completed=None):
         query = Task.query
