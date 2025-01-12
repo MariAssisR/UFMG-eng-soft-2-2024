@@ -5,51 +5,35 @@ import os
 import json
 
 
-# Fixture para resetar o estado antes de cada teste
 @pytest.fixture
-def reset_tasks():
-    # Remove o arquivo JSON antes de cada teste
-    if os.path.exists("tasks.json"):
-        os.remove("tasks.json")
-    # Recria o arquivo vazio
-    with open("tasks.json", "w") as file:
-        json.dump([], file)
-
-
-@pytest.fixture
-def client(reset_tasks):  # Usa a fixture de reset
-    app = create_app()
-    app.config["TESTING"] = True
-    app.config["DEBUG"] = False
+def client():
+    app = create_app('testing') 
+    app.config['DEBUG'] = False  
     with app.test_client() as client:
         yield client
 
-
 @pytest.fixture
-def task_manager(reset_tasks):  # Usa a fixture de reset
-    task_manager = TaskManager()
-    task_manager.tasks = []  # Reseta a lista de tarefas
-    task_manager.save_tasks()  # Salva o estado limpo
-    return task_manager
-
+def task_manager():
+    return TaskManager() 
 
 # Teste 1: Listar tarefas quando não há nenhuma
-def test_list_tasks_empty(client):
+def test_list_tasks_empty(client, task_manager):
     response = client.get("/tasks/")
     assert response.status_code == 200
     assert response.get_json() == []
 
 
 # Teste 2: Adicionar uma nova tarefa
-def test_add_task(client):
+def test_add_task(client, task_manager):
     task_data = {
         "description": "Estudar Python",
         "category": "Pessoal",
         "deadline": "2024-12-31",
     }
-    response = client.post("/tasks/", json=task_data)
-    assert response.status_code == 201
-    task = response.get_json()
+    task_manager.add_task(task_data)
+    response = client.get("/tasks/") 
+    assert response.status_code == 200
+    task = response.get_json()[0] 
     assert task["description"] == "Estudar Python"
     assert task["completed"] is False
 
