@@ -68,4 +68,4 @@ def mark_completed(task_id):
 def delete_all_tasks():
     task_manager = TaskManager(db)
     task_manager.delete_all()
-    return jsonify({"message": "Todas as tarefas foram apagadas"}), 200
+    return jsonify({"message": "All tasks deleted"}), 200

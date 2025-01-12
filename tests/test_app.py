@@ -220,3 +220,99 @@ def test_unique_task_ids(client):
     client.post("/tasks/", json=task_2_data)
     tasks = client.get("/tasks/").get_json()
     assert tasks[0]["id"] != tasks[1]["id"]
+
+
+
+# ------------------------------ Testes e2e ------------------------------ 
+
+# Teste E2E 1: Fluxo completo de criar, listar, editar e excluir uma tarefa
+def test_e2e_full_task_lifecycle(client):
+    task_data = {
+        "description": "Estudar Engenharia de Dados",
+        "category": "Pessoal",
+        "deadline": "2025-01-31",
+    }
+    create_response = client.post("/tasks/", json=task_data)
+    assert create_response.status_code == 201
+    created_task = create_response.get_json()
+    task_id = created_task["id"]
+
+    list_response = client.get("/tasks/")
+    tasks = list_response.get_json()
+    assert len(tasks) == 1
+    assert tasks[0]["id"] == task_id
+
+    updated_task_data = {
+        "description": "Estudar Python Avançado",
+        "category": "Pessoal",
+        "deadline": "2025-02-15",
+    }
+    edit_response = client.put(f"/tasks/{task_id}", json=updated_task_data)
+    assert edit_response.status_code == 200
+    updated_task = edit_response.get_json()
+    assert updated_task["description"] == "Estudar Python Avançado"
+
+    delete_response = client.delete(f"/tasks/{task_id}")
+    assert delete_response.status_code == 200
+    assert delete_response.get_json()["message"] == f"Task {task_id} deleted"
+
+    final_list_response = client.get("/tasks/")
+    assert final_list_response.get_json() == []
+
+
+# Teste E2E 2: Criar múltiplas tarefas e verificar a listagem de pendentes e concluídas
+def test_e2e_list_pending_and_completed(client):
+    # Criar duas tarefas
+    task_1 = {"description": "Ler um livro", "category": "Pessoal", "deadline": "2025-01-15"}
+    task_2 = {"description": "Exercícios físicos", "category": "Pessoal", "deadline": "2025-01-20"}
+    client.post("/tasks/", json=task_1)
+    client.post("/tasks/", json=task_2)
+
+    client.patch("/tasks/1/complete")
+
+    pending_response = client.get("/tasks/?completed=false")
+    pending_tasks = pending_response.get_json()
+    assert len(pending_tasks) == 1
+    assert pending_tasks[0]["description"] == "Exercícios físicos"
+
+    completed_response = client.get("/tasks/?completed=true")
+    completed_tasks = completed_response.get_json()
+    assert len(completed_tasks) == 1
+    assert completed_tasks[0]["description"] == "Ler um livro"
+
+
+# Teste E2E 3: Fluxo de criar uma tarefa com validação de erro
+def test_e2e_create_task_with_validation_error(client):
+    response = client.post("/tasks/", json={"category": "Pessoal", "deadline": "2025-01-31"})
+    assert response.status_code == 400
+    assert response.get_json()["error"] == "Description is required"
+
+
+# Teste E2E 4: Fluxo de persistência de dados entre requisições
+def test_e2e_persistence_across_requests(client):
+    task_data = {
+        "description": "Aprender Flask",
+        "category": "Trabalho",
+        "deadline": "2025-01-20",
+    }
+    client.post("/tasks/", json=task_data)
+
+    response = client.get("/tasks/")
+    tasks = response.get_json()
+    assert len(tasks) == 1
+    assert tasks[0]["description"] == "Aprender Flask"
+
+
+# Teste E2E 5: Fluxo de limpar todas as tarefas
+def test_e2e_clear_all_tasks(client):
+    task_1 = {"description": "Estudar", "category": "Pessoal", "deadline": "2025-01-10"}
+    task_2 = {"description": "Fazer compras", "category": "Pessoal", "deadline": "2025-01-11"}
+    client.post("/tasks/", json=task_1)
+    client.post("/tasks/", json=task_2)
+
+    clear_response = client.delete("/tasks/clear")
+    assert clear_response.status_code == 200
+    assert clear_response.get_json()["message"] == "All tasks deleted"
+
+    response = client.get("/tasks/")
+    assert response.get_json() == []

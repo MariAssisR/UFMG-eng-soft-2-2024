@@ -1,6 +1,5 @@
 from app import db  
 from datetime import datetime
-from flask import jsonify
 
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
