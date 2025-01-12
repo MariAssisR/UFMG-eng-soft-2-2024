@@ -28,4 +28,7 @@ Um sistema simples para gerenciar tarefas do dia a dia, permitindo:
     - SECRET_KEY=uma_chave_segura_aleatória
 4. Executar
     - python run.py
-
+  
+## Como rodar os testes
+1. Execute o comando 
+    - pytest tests/test_app.py
